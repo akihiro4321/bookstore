@@ -1,0 +1,55 @@
+version: "3"
+
+services:
+  mysql:
+    image: arm64v8/mysql:8.0-oracle
+    container_name: mysql_host
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: bookstore_db
+      MYSQL_USER: storeuser
+      MYSQL_PASSWORD: storepw
+      TZ: "Asia/Tokyo"
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/mysql/my.cnf
+    ports:
+      - 3306:3306
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - cluster.name=docker-cluster
+      - xpack.security.enabled=false
+      - xpack.monitoring.collection.enabled=true
+      # - ELASTIC_PASSWORD=P@ssw0rd
+      - "ES_JAVA_OPTS=-Xms512M -Xmx512M"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    restart: always
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.10.2
+    container_name: kibana
+    ports:
+      - 5601:5601
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      # - ELASTICSEARCH_USERNAME=kibana_system
+      # - ELASTICSEARCH_PASSWORD=P@ssw0rd
+    depends_on:
+      - elasticsearch
+    restart: always
+
+volumes:
+  elasticsearch-data:
+    driver: local

@@ -1,1 +1,13 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/bookstore_db
+    username: storeuser
+    password: storepw
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
 
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
